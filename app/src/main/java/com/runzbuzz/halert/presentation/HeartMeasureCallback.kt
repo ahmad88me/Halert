@@ -19,7 +19,6 @@ class HeartMeasureCallback: MeasureCallback {
     }
 
 
-
     override fun onDataReceived(data: DataPointContainer) {
         // Inspect data points.
         Log.d("Health", "Data is received")
@@ -27,6 +26,13 @@ class HeartMeasureCallback: MeasureCallback {
         Log.d("Health", data.getData(DataType.HEART_RATE_BPM).last().toString())
         Log.d("Health", data.getData(DataType.HEART_RATE_BPM).last().dataType.toString())
         Log.d("Health", data.getData(DataType.HEART_RATE_BPM).last().value.toString())
+//        val heartRate = data.getData(DataType.HEART_RATE_BPM).last()
+//        Log.d("HeartRate", "Heart rate: $heartRate bpm")
+        runAlarm(data.getData(DataType.HEART_RATE_BPM).last().value.toFloat())
+    }
+
+    fun runAlarm(heart_bpm: Float){
+        Log.d("Health", "Run Alarm {$heart_bpm}")
     }
 
     override fun onRegistered() {

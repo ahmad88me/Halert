@@ -85,4 +85,7 @@ dependencies {
     // Use to implement wear ongoing activities
     implementation "androidx.wear:wear-ongoing:1.0.0"
 
+    // Kotlin + coroutines
+    implementation "androidx.work:work-runtime-ktx:2.8.1"
+
 }
