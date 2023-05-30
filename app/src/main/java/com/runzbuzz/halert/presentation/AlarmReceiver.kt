@@ -7,10 +7,12 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.os.PowerManager
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.health.services.client.HealthServices
 import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.PassiveListenerConfig
@@ -18,7 +20,7 @@ import androidx.health.services.client.data.PassiveListenerConfig
 // Define a BroadcastReceiver class that handles the alarm events
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        Log.d("alarm", "**** Now the alarm is fired ***")
+//        Log.d("alarm", "**** Now the alarm is fired ***")
 //// Get the Vibrator service from the context
 //        val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 //
@@ -55,6 +57,14 @@ class AlarmReceiver : BroadcastReceiver() {
         //vibrator2.vibrate(ve)
 
 
+
+        val wakeLock: PowerManager.WakeLock =
+            (context.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag").apply {
+                    acquire()
+                }
+            }
+        wakeLock.release()
 //
 //        val heartRateCallback = HeartMeasureCallback()
 //        val healthClient = HealthServices.getClient(context /*context*/)

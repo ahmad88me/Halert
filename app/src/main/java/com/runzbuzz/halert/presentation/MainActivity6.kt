@@ -48,6 +48,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.health.services.client.PassiveListenerCallback
+import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.PassiveListenerConfig
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Text
@@ -78,7 +80,6 @@ class MainActivity6 : FragmentActivity(), AmbientModeSupport.AmbientCallbackProv
         }
 
 
-
         // In your onCreate method, initialize the alarm manager and the pending intent
         alarmMgr = getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmIntent = Intent(this, AlarmReceiver::class.java).let { intent ->
@@ -94,22 +95,38 @@ class MainActivity6 : FragmentActivity(), AmbientModeSupport.AmbientCallbackProv
         )
 
 
-        // active
-        val heartRateCallback = HeartMeasureCallback()
-        val healthClient = HealthServices.getClient(this /*context*/)
-        val measureClient = healthClient.measureClient
-        measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, heartRateCallback)
+//        // active
+//        val heartRateCallback = HeartMeasureCallback()
+//        val healthClient = HealthServices.getClient(this /*context*/)
+//        val measureClient = healthClient.measureClient
+//        measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, heartRateCallback)
+//
+//
+
+
+
+
 
 // passive test
-//            val passiveListenerConfig = PassiveListenerConfig.builder()
-//                .setDataTypes(setOf(DataType.HEART_RATE_BPM))
-//                .build()
-//            val healthClient = HealthServices.getClient(this /*context*/)
-//            val passiveMonitoringClient = healthClient.passiveMonitoringClient
-//            passiveMonitoringClient.setPassiveListenerServiceAsync(PassiveDataService::class.java,
-//                passiveListenerConfig
-//            )
-
+            val passiveListenerConfig = PassiveListenerConfig.builder()
+                .setDataTypes(setOf(DataType.HEART_RATE_BPM))
+                .build()
+            val healthClient = HealthServices.getClient(this /*context*/)
+            val passiveMonitoringClient = healthClient.passiveMonitoringClient
+        passiveMonitoringClient.setPassiveListenerServiceAsync(PassiveDataService::class.java,
+            passiveListenerConfig
+        )
+//        val passiveListenerCallback: PassiveListenerCallback = object : PassiveListenerCallback {
+//            override fun onNewDataPointsReceived(dataPoints: DataPointContainer) {
+//                // TODO: Do something with dataPoints
+//                Log.d("PassiveListenerCallback", "Passive Listener Callback")
+//            }
+//        }
+//
+//        passiveMonitoringClient.setPassiveListenerCallback(
+//            passiveListenerConfig,
+//            passiveListenerCallback
+//        )
 
 
 
@@ -187,19 +204,23 @@ class MainActivity6 : FragmentActivity(), AmbientModeSupport.AmbientCallbackProv
 // Return an ambient callback that handles the ambient and active modes
         return object : AmbientModeSupport.AmbientCallback() {
             override fun onEnterAmbient(ambientDetails: Bundle?) {
+                Log.d("Ambient", "Entering Ambient Mode")
+
                 super.onEnterAmbient(ambientDetails)
 // Stop the vibration runnable when entering ambient mode
-                Log.d("Ambient", "Entering Ambient Mode")
 //                handler.removeCallbacks(vibrationRunnable)
             }
 
             override fun onUpdateAmbient() {
-                super.onUpdateAmbient()
                 Log.d("Ambient", "Updating Ambient Mode")
+
+                super.onUpdateAmbient()
 
             }
 
             override fun onExitAmbient() {
+                Log.d("Ambient", "Leaving Ambient Mode")
+
                 super.onExitAmbient()
                 Log.d("Ambient", "Leaving Ambient Mode")
             }
