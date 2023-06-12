@@ -31,7 +31,10 @@ import com.google.android.gms.wearable.DataClient
 import com.google.android.gms.wearable.DataEventBuffer
 
 import android.app.AlarmManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.TaskStackBuilder
 import android.content.BroadcastReceiver
 import android.content.Intent
 import android.os.Build
@@ -48,12 +51,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.health.services.client.PassiveListenerCallback
 import androidx.health.services.client.data.DataPointContainer
 import androidx.health.services.client.data.PassiveListenerConfig
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.Text
 import androidx.work.await
+import com.runzbuzz.halert.R
 import java.util.concurrent.TimeUnit
 
 
@@ -66,6 +72,8 @@ class MainActivity6 : FragmentActivity(), AmbientModeSupport.AmbientCallbackProv
  */
     lateinit var ambientController: AmbientModeSupport.AmbientController
 
+    private var notificationId=10009123
+
     // In your main activity, declare the following variables
     //private lateinit var alarmMgr: AlarmManager
     private var alarmMgr: AlarmManager? = null
@@ -74,7 +82,7 @@ class MainActivity6 : FragmentActivity(), AmbientModeSupport.AmbientCallbackProv
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ambientController = AmbientModeSupport.attach(this)
-
+        this.setTurnScreenOn(true)
         setContent {
             WearApp(greetingName = "Hello")
         }
@@ -87,35 +95,48 @@ class MainActivity6 : FragmentActivity(), AmbientModeSupport.AmbientCallbackProv
         }
 
         // To start the alarm, use the setInexactRepeating method with a 20-second interval
-        alarmMgr?.setInexactRepeating(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime(),
-            5 * 1000,
-            alarmIntent
-        )
+        alarmMgr?.setRepeating(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime(),
+                5 * 1000,
+                alarmIntent
+            )
+
+//                    alarmMgr?.setInexactRepeating(
+//            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+//            SystemClock.elapsedRealtime(),
+//            10 * 1000,
+//            alarmIntent
+//        )
 
 
-//        // active
-//        val heartRateCallback = HeartMeasureCallback()
-//        val healthClient = HealthServices.getClient(this /*context*/)
-//        val measureClient = healthClient.measureClient
-//        measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, heartRateCallback)
-//
-//
+        // active
+        val heartRateCallback = HeartMeasureCallback()
+        val healthClient = HealthServices.getClient(this /*context*/)
+        val measureClient = healthClient.measureClient
+        heartRateCallback.context = this
+        measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, heartRateCallback)
+
+
 
 
 
 
 
 // passive test
-            val passiveListenerConfig = PassiveListenerConfig.builder()
-                .setDataTypes(setOf(DataType.HEART_RATE_BPM))
-                .build()
-            val healthClient = HealthServices.getClient(this /*context*/)
-            val passiveMonitoringClient = healthClient.passiveMonitoringClient
-        passiveMonitoringClient.setPassiveListenerServiceAsync(PassiveDataService::class.java,
-            passiveListenerConfig
-        )
+//           val passiveListenerConfig = PassiveListenerConfig.builder()
+//                .setDataTypes(setOf(DataType.HEART_RATE_BPM))
+//                .build()
+////            val healthClient = HealthServices.getClient(this *//*context*//*)
+//            val passiveMonitoringClient = healthClient.passiveMonitoringClient
+//        // service
+//        passiveMonitoringClient.setPassiveListenerServiceAsync(PassiveDataService::class.java,
+//            passiveListenerConfig
+//        )
+
+
+        // call back
+
 //        val passiveListenerCallback: PassiveListenerCallback = object : PassiveListenerCallback {
 //            override fun onNewDataPointsReceived(dataPoints: DataPointContainer) {
 //                // TODO: Do something with dataPoints
@@ -197,6 +218,7 @@ class MainActivity6 : FragmentActivity(), AmbientModeSupport.AmbientCallbackProv
 
 
 
+        createNotificationChannel(this)
 
     }
 
@@ -225,6 +247,72 @@ class MainActivity6 : FragmentActivity(), AmbientModeSupport.AmbientCallbackProv
                 Log.d("Ambient", "Leaving Ambient Mode")
             }
         }
+    }
+
+
+    private fun createNotificationChannel(context: Context) {
+        val TAG = "MainActivity"
+        Log.d(TAG, "createNotificationChannel")
+//        val CHANNEL_ID = NotificationChannel.DEFAULT_CHANNEL_ID
+        val CHANNEL_ID = "HalertChannel"
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.d(TAG, "creating notification channel")
+
+            val name = "The Name"//getString(R.string.channel_name)
+            val descriptionText = "Some Descr"//getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+
+            Log.d(TAG, "channel creation {$CHANNEL_ID}")
+
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+//            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+//                description = descriptionText
+//            }
+            Log.d(TAG, "channel registration")
+
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            Log.d(TAG, "Adding Channel to the Manager")
+
+            notificationManager.createNotificationChannel(channel)
+        }
+
+
+        Log.d(TAG, "creating pending intent")
+        val pendingIntent = TaskStackBuilder.create(this).run {
+            addNextIntentWithParentStack(intent)
+            getPendingIntent(0,PendingIntent.FLAG_UPDATE_CURRENT)
+        }
+
+        Log.d(TAG, "creating a builder")
+
+
+        var builder = NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_noti)
+//            .setSmallIcon(androidx.core.R.drawable.notification_bg)
+            .setContentTitle("My notification")
+            .setContentText("Much longer text that cannot fit one line...")
+//            .setStyle(NotificationCompat.BigTextStyle()
+//                .bigText("Much longer text that cannot fit one line..."))
+//            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setAutoCancel(true)
+
+        Log.d(TAG, "will notify {$notificationId}")
+        with(NotificationManagerCompat.from(context)) {
+            // notificationId is a unique int for each notification that you must define
+            notify(notificationId, builder.build())
+            notificationId += 1
+            Log.d(TAG, "notification ID: {$notificationId}")
+
+        }
+
     }
 }
 

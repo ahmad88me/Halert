@@ -1,5 +1,10 @@
 package com.runzbuzz.halert.presentation
 
+import android.content.Context
+import android.os.Build
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
 import android.util.Log
 import androidx.health.services.client.MeasureCallback
 import androidx.health.services.client.data.Availability
@@ -8,7 +13,10 @@ import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DataTypeAvailability
 import androidx.health.services.client.data.DeltaDataType
 
+
+
 class HeartMeasureCallback: MeasureCallback {
+    lateinit var context: Context
     override fun onAvailabilityChanged(dataType: DeltaDataType<*, *>, availability: Availability) {
         if (availability is DataTypeAvailability) {
             Log.d("Health", "Availability is changed")
@@ -17,7 +25,6 @@ class HeartMeasureCallback: MeasureCallback {
             // Handle availability change.
         }
     }
-
 
     override fun onDataReceived(data: DataPointContainer) {
         // Inspect data points.
@@ -33,6 +40,26 @@ class HeartMeasureCallback: MeasureCallback {
 
     fun runAlarm(heart_bpm: Float){
         Log.d("Health", "Run Alarm {$heart_bpm}")
+
+
+        val ve = VibrationEffect.createOneShot(2000, 255)
+        val vibrator2: Vibrator
+//        val context = this.getApplicationContext()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            Log.d("PassiveDataService", "New version")
+
+            val vmanager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+//        val vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            vibrator2 = vmanager.defaultVibrator
+        } else{
+            Log.d("PassiveDataService", "Old version")
+            vibrator2 = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        }
+        Log.d("PassiveDataService", "hasVibrator: " + vibrator2.hasVibrator().toString())
+//        Log.d("HWorker", "Stopped the Vibration for now.")
+        vibrator2.vibrate(ve)
+
+
     }
 
     override fun onRegistered() {

@@ -1,8 +1,10 @@
 package com.runzbuzz.halert.presentation
 
 // Import the necessary packages
-import android.app.AlarmManager
-import android.app.PendingIntent
+import android.app.Activity
+import android.app.NotificationChannel
+import android.app.NotificationChannel.DEFAULT_CHANNEL_ID
+import android.app.NotificationManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -12,13 +14,20 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.health.services.client.HealthServices
-import androidx.health.services.client.data.DataType
-import androidx.health.services.client.data.PassiveListenerConfig
+import android.view.Window
+import android.view.WindowManager
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 
+
+//class AlarmReceiver : WakefulBroadcastReceiver() {
 // Define a BroadcastReceiver class that handles the alarm events
 class AlarmReceiver : BroadcastReceiver() {
+
+    private val TAG="AlarmReceiver"
+
+    private var notificationId=0
+
     override fun onReceive(context: Context, intent: Intent) {
 //        Log.d("alarm", "**** Now the alarm is fired ***")
 //// Get the Vibrator service from the context
@@ -34,37 +43,63 @@ class AlarmReceiver : BroadcastReceiver() {
 //            vibrator.vibrate(1000)
 //            Log.d("alarm", "Alarm 2")
 //        }
-
         // Another
-        Log.d("HWorker", "Attempt 2")
+        Log.d(TAG, "Alarm Receiver")
 
 
         val ve = VibrationEffect.createOneShot(2000, 255)
         val vibrator2: Vibrator
 //        val context = this.getApplicationContext()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            Log.d("HWorker", "New version")
+            Log.d(TAG, "New version")
 
             val vmanager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
 //        val vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
             vibrator2 = vmanager.defaultVibrator
         } else{
-            Log.d("HWorker", "Old version")
+            Log.d(TAG, "Old version")
             vibrator2 = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         }
-        Log.d("HWorker", "hasVibrator: " + vibrator2.hasVibrator().toString())
-        Log.d("HWorker", "Stopped the Vibration for now.")
-        //vibrator2.vibrate(ve)
+        Log.d(TAG, "hasVibrator: " + vibrator2.hasVibrator().toString())
+//        Log.d("HWorker", "Stopped the Vibration for now.")
+//        vibrator2.vibrate(ve)
 
 
 
-        val wakeLock: PowerManager.WakeLock =
-            (context.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
-                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag").apply {
-                    acquire()
-                }
-            }
-        wakeLock.release()
+//        val wakeLock: PowerManager.WakeLock =
+//            (context.getSystemService(Context.POWER_SERVICE) as PowerManager).run {
+//                newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag").apply {
+//                    acquire()
+//                }
+//            }
+//        wakeLock.release()
+//
+//
+//
+        val wl = (context.getSystemService(Context.POWER_SERVICE) as PowerManager)
+        .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Halert:AlarmReceiver")
+        wl.acquire()
+
+
+        //Log.d(TAG, "going to sleep for 5 seconds")
+        // to sleep
+        //TimeUnit.SECONDS.sleep(5L)
+        //Log.d(TAG, "walking up")
+
+//        Toast.makeText(context, "Screen on ... ", Toast.LENGTH_SHORT).show()
+
+        //createNotificationChannel(context)
+
+
+        wl.release()
+
+
+
+//        PowerManager pm = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
+//        mWakeLock = pm.newWakeLock((PowerManager.SCREEN_DIM_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP), "YourServie");
+//        mWakeLock.acquire();
+//        [...]
+//        mWakeLock.release();
 //
 //        val heartRateCallback = HeartMeasureCallback()
 //        val healthClient = HealthServices.getClient(context /*context*/)
@@ -80,5 +115,56 @@ class AlarmReceiver : BroadcastReceiver() {
 //            val healthClient = HealthServices.getClient(context /*context*/)
 //            val passiveMonitoringClient = healthClient.passiveMonitoringClient
 //            passiveMonitoringClient.setPassiveListenerServiceAsync()
+    }
+
+
+    private fun createNotificationChannel(context: Context) {
+        Log.d(TAG, "createNotificationChannel")
+        val CHANNEL_ID = DEFAULT_CHANNEL_ID
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            Log.d(TAG, "creating notification channel")
+
+            val name = "The Name"//getString(R.string.channel_name)
+            val descriptionText = "Some Descr"//getString(R.string.channel_description)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+
+            Log.d(TAG, "channel creation")
+
+            val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+                description = descriptionText
+            }
+            Log.d(TAG, "channel registration")
+
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            Log.d(TAG, "Adding Channel to the Manager")
+
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        Log.d(TAG, "creating a builder")
+
+
+        var builder = NotificationCompat.Builder(context, CHANNEL_ID)
+//            .setSmallIcon(R.drawable.notification_icon)
+            .setContentTitle("My notification")
+            .setContentText("Much longer text that cannot fit one line...")
+//            .setStyle(NotificationCompat.BigTextStyle()
+//                .bigText("Much longer text that cannot fit one line..."))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+
+        Log.d(TAG, "will notify {$notificationId}")
+        with(NotificationManagerCompat.from(context)) {
+            // notificationId is a unique int for each notification that you must define
+            notify(notificationId, builder.build())
+            notificationId += 1
+            Log.d(TAG, "notification ID: {$notificationId}")
+
+        }
+
     }
 }
