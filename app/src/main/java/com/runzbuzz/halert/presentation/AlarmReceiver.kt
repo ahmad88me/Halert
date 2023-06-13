@@ -5,6 +5,8 @@ import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationChannel.DEFAULT_CHANNEL_ID
 import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.TaskStackBuilder
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -18,6 +20,7 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.runzbuzz.halert.R
 
 
 //class AlarmReceiver : WakefulBroadcastReceiver() {
@@ -27,6 +30,7 @@ class AlarmReceiver : BroadcastReceiver() {
     private val TAG="AlarmReceiver"
 
     private var notificationId=0
+//    lateinit var activity: Activity
 
     override fun onReceive(context: Context, intent: Intent) {
 //        Log.d("alarm", "**** Now the alarm is fired ***")
@@ -88,11 +92,10 @@ class AlarmReceiver : BroadcastReceiver() {
 
 //        Toast.makeText(context, "Screen on ... ", Toast.LENGTH_SHORT).show()
 
-        //createNotificationChannel(context)
+        //createNotificationChannel(context, intent)
 
 
         wl.release()
-
 
 
 //        PowerManager pm = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);
@@ -107,8 +110,6 @@ class AlarmReceiver : BroadcastReceiver() {
 //        measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, heartRateCallback)
 //
 
-
-
 //                    val passiveListenerConfig = PassiveListenerConfig.builder()
 //                .setDataTypes(setOf(DataType.HEART_RATE_BPM))
 //                .build()
@@ -118,9 +119,10 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 
 
-    private fun createNotificationChannel(context: Context) {
+    private fun createNotificationChannel(context: Context, intent: Intent) {
         Log.d(TAG, "createNotificationChannel")
-        val CHANNEL_ID = DEFAULT_CHANNEL_ID
+//        val CHANNEL_ID = DEFAULT_CHANNEL_ID
+        val CHANNEL_ID = "HalertChannel"
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -141,21 +143,34 @@ class AlarmReceiver : BroadcastReceiver() {
             val notificationManager: NotificationManager =
                 context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             Log.d(TAG, "Adding Channel to the Manager")
-
             notificationManager.createNotificationChannel(channel)
         }
 
-        Log.d(TAG, "creating a builder")
 
+
+//        Log.d(TAG, "creating pending intent")
+//        val pendingIntent = TaskStackBuilder.create(activity).run {
+//        addNextIntentWithParentStack(intent)
+//        getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+//        }
+
+
+
+        Log.d(TAG, "creating a builder")
 
         var builder = NotificationCompat.Builder(context, CHANNEL_ID)
 //            .setSmallIcon(R.drawable.notification_icon)
+            .setSmallIcon(R.drawable.ic_noti)
             .setContentTitle("My notification")
             .setContentText("Much longer text that cannot fit one line...")
 //            .setStyle(NotificationCompat.BigTextStyle()
 //                .bigText("Much longer text that cannot fit one line..."))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
+            .extend(
+                NotificationCompat.WearableExtender()
+                    .setBridgeTag("tagOne")
+            )
 
         Log.d(TAG, "will notify {$notificationId}")
         with(NotificationManagerCompat.from(context)) {
@@ -163,8 +178,6 @@ class AlarmReceiver : BroadcastReceiver() {
             notify(notificationId, builder.build())
             notificationId += 1
             Log.d(TAG, "notification ID: {$notificationId}")
-
         }
-
     }
 }
