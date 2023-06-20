@@ -3,13 +3,16 @@ package com.runzbuzz.halert.presentation
 
 // Import the necessary libraries
 
+import android.Manifest
 import android.app.AlarmManager
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.NotificationManager.IMPORTANCE_HIGH
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
@@ -32,6 +35,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.fragment.app.FragmentActivity
@@ -59,6 +63,8 @@ class MainActivity6 : FragmentActivity(), AmbientModeSupport.AmbientCallbackProv
     private lateinit var alarmIntent: PendingIntent
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val TAG = "Main"
+
         super.onCreate(savedInstanceState)
         ambientController = AmbientModeSupport.attach(this)
         this.setTurnScreenOn(true)
@@ -178,6 +184,22 @@ class MainActivity6 : FragmentActivity(), AmbientModeSupport.AmbientCallbackProv
 
 //        createNotificationChannel2(this)
 //        createNotificationSample(this)
+        if (
+            ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.POST_NOTIFICATIONS)
+        ){
+            Log.d(TAG, "Should request permission")
+        }
+        else{
+            Log.d(TAG, "Should not")
+        }
+        Log.d(TAG, "requesting permission")
+        ActivityCompat.requestPermissions(this,
+            listOf(Manifest.permission.POST_NOTIFICATIONS).toTypedArray(), 1)
+
+
+
+        createNotificationChannel(this)
+        createNotification5(this)
     }
 
     override fun getAmbientCallback(): AmbientModeSupport.AmbientCallback {
@@ -307,10 +329,10 @@ fun WearApp(greetingName: String, ac: FragmentActivity? = null) {
                 Log.d("Click", "hasVibrator: " + vibrator2.hasVibrator().toString())
                 vibrator2.vibrate(ve)
 
-                createNotificationSample(context)
+//                createNotificationSample(context)
 
-
-                createNotificationChannel2(context)
+                createNotification5(context)
+//                createNotificationChannel2(context)
 //                createNotificationSample(this)
 
                 //createNotificationChannel(context)
@@ -388,7 +410,7 @@ fun DefaultPreview() {
 fun createNotificationChannel1(context: Context) {
     val TAG = "External from MainActivity"
     val notificationId=1
-    Log.d(TAG, "createNotificationChannel2")
+    Log.d(TAG, "createNotificationChannel1")
 //        val CHANNEL_ID = NotificationChannel.DEFAULT_CHANNEL_ID
     val CHANNEL_ID = "HalertChannel2"
     // Create the NotificationChannel, but only on API 26+ because
@@ -440,6 +462,7 @@ fun createNotificationChannel1(context: Context) {
 //                .bigText("Much longer text that cannot fit one line..."))
 //            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
 //        .setContentIntent(pendingIntent)
+        .setStyle(NotificationCompat.BigTextStyle())
         .setPriority(NotificationCompat.PRIORITY_MAX)
         .setAutoCancel(true)
 
@@ -456,7 +479,7 @@ fun createNotificationChannel1(context: Context) {
 
 
 fun createNotificationChannel2(context: Context) {
-    val TAG = "External from MainActivity"
+    val TAG = "Notification2"
     val notificationId=10
     Log.d(TAG, "createNotificationChannel2")
     val CHANNEL_ID = "HalertChannel2"
@@ -466,7 +489,9 @@ fun createNotificationChannel2(context: Context) {
         Log.d(TAG, "creating notification channel")
         val name = "The Name"//getString(R.string.channel_name)
         val descriptionText = "Some Descr"//getString(R.string.channel_description)
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
+//        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val importance = NotificationManager.IMPORTANCE_HIGH
+
 
         Log.d(TAG, "channel creation {$CHANNEL_ID}")
 
@@ -498,13 +523,17 @@ fun createNotificationChannel2(context: Context) {
         .setContentTitle("New mail from " )
         .setContentText("Some subject")
         .setSmallIcon(com.runzbuzz.halert.R.drawable.ic_noti)
-        .setLocalOnly(true)
-        .extend(
-            NotificationCompat.WearableExtender()
-               // .setContentIcon(com.runzbuzz.halert.R.drawable.ic_noti)
-        )
+//        .setStyle(NotificationCompat.BigTextStyle())
+        .setStyle(NotificationCompat.MessagingStyle("DisplayName"))
+        .setPriority(IMPORTANCE_HIGH)
+//        .setLocalOnly(true)
+//        .extend(
+//            NotificationCompat.WearableExtender()
+//               .setContentIcon(com.runzbuzz.halert.R.drawable.ic_noti)
+//        )
         .build()
-    NotificationManagerCompat.from(context).notify(0, notification)
+//    NotificationManagerCompat.from(context).notify(0, notification)
+    NotificationManagerCompat.from(context).notify(notificationId, notification)
 
 
 //    var builder = NotificationCompat.Builder(context, CHANNEL_ID)
@@ -538,9 +567,13 @@ fun createNotificationChannel2(context: Context) {
 
 
 
+
+
 fun createNotificationSample(context: Context) {
 // Create a notification channel with ID "my_channel"
-    val channel = NotificationChannel("my_channel", "My Channel", NotificationManager.IMPORTANCE_DEFAULT)
+//    val channel = NotificationChannel("my_channel", "My Channel", NotificationManager.IMPORTANCE_DEFAULT)
+    val channel = NotificationChannel("my_channel", "My Channel", NotificationManager.IMPORTANCE_HIGH)
+
 // Register the channel with the system
     val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     notificationManager.createNotificationChannel(channel)
@@ -549,7 +582,141 @@ fun createNotificationSample(context: Context) {
         .setContentTitle("My Notification")
         .setContentText("Hello World!")
         .setSmallIcon(com.runzbuzz.halert.R.drawable.ic_noti)
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+        .setStyle(NotificationCompat.BigTextStyle())
 // Issue the notification with an ID of 1
     NotificationManagerCompat.from(context).notify(1, builder.build())
+}
+
+fun createNotification5(context: Context){
+    val TAG="Notification5"
+    val CHANNEL_ID="Halert"
+    val notificationId=1
+
+
+    // If the notification supports a direct reply action, use
+// PendingIntent.FLAG_MUTABLE instead.
+    val pendingIntent: PendingIntent =
+        Intent(context, NotiActivity::class.java).let { notificationIntent ->
+            PendingIntent.getActivity(context, 0, notificationIntent,
+                PendingIntent.FLAG_IMMUTABLE)
+        }
+
+    var builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        .setContentTitle("A title")
+        .setContentText("Notification Description")
+        .setSmallIcon(androidx.media.R.drawable.notification_bg)
+//        .setOngoing(true)
+//        .extend(NotificationCompat.WearableExtender().setContentIcon(androidx.media.R.drawable.notification_bg))
+    Log.d(TAG, "Created the builder")
+    var notification = builder.build()
+    NotificationManagerCompat.from(context).notify(0, notification);
+    Log.d(TAG, "The notification should show")
+// Notification ID cannot be 0.
+//    context.startForeground(ONGOING_NOTIFICATION_ID, notification)
+}
+
+fun createNotification4(context: Context){
+    val TAG="Notification4"
+    val CHANNEL_ID="Halert"
+    val notificationId=1
+    // If the notification supports a direct reply action, use
+// PendingIntent.FLAG_MUTABLE instead.
+    val pendingIntent: PendingIntent =
+        Intent(context, NotiActivity::class.java).let { notificationIntent ->
+            PendingIntent.getActivity(context, 0, notificationIntent,
+                PendingIntent.FLAG_IMMUTABLE)
+        }
+
+    var builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        .setContentTitle("A title")
+        .setContentText("Notification Description")
+        .setSmallIcon(androidx.media.R.drawable.notification_bg)
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//        .setSmallIcon(com.runzbuzz.halert.R.drawable.ic_noti)
+        .setContentIntent(pendingIntent)
+//        .setTicker("Tickertext")
+//        .build()
+
+    with(NotificationManagerCompat.from(context)) {
+
+        if(ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED){
+            Log.d(TAG, "permission granted")
+        }
+        else if(ActivityCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED){
+            Log.d(TAG, "permission denied")
+        }
+        else{
+            Log.d(TAG, "permission is not granted but is not denied either")
+        }
+
+        // notificationId is a unique int for each notification that you must define
+        notify(notificationId, builder.build())
+    }
+// Notification ID cannot be 0.
+//    context.startForeground(ONGOING_NOTIFICATION_ID, notification)
+}
+
+fun createNotification3(context: Context){
+    val CHANNEL_ID="Halert"
+    val notificationId=3
+    // Create an explicit intent for an Activity in your app
+//    val intent = Intent(context, AlarmReceiver::class.java).apply {
+//        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//    }
+    val intent = Intent(context, NotiActivity::class.java).apply {
+        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+    }
+    val pendingIntent: PendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+    var builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        .setSmallIcon(com.runzbuzz.halert.R.drawable.ic_noti)
+        .setContentTitle("A title 3")
+        .setContentText("Content 3")
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setCategory(Notification.CATEGORY_MESSAGE)
+        .setContentIntent(pendingIntent)
+
+    Log.d("Notification", "The notification will show now")
+
+    with(NotificationManagerCompat.from(context)) {
+        // notificationId is a unique int for each notification that you must define
+        notify(notificationId, builder.build())
+    }
+
+//    val incomingCallNotification = builder.build()
+    // Provide a unique integer for the "notificationId" of each notification.
+
+//    context.startForeground(notificationId, incomingCallNotification)
+//    context.startForeground(notificationId, incomingCallNotification)
+
+}
+
+
+
+private fun createNotificationChannel(context: Context) {
+    // Create the NotificationChannel, but only on API 26+ because
+    // the NotificationChannel class is new and not in the support library
+    val TAG = "Notification Channel"
+    val CHANNEL_ID="Halert"
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val name = CHANNEL_ID//"name"
+        val descriptionText = "the halert channel"
+        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+            description = descriptionText
+        }
+        // Register the channel with the system
+        val notificationManager: NotificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if(notificationManager.areNotificationsEnabled()){
+            Log.d(TAG, "Notifications are enabled")
+        }
+        else{
+            Log.d(TAG, "Notifications are not")
+        }
+        notificationManager.createNotificationChannel(channel)
+    }
+    Log.d("Notification", "Notification Channel is created")
 }
