@@ -13,6 +13,7 @@ import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DataTypeAvailability
 import androidx.health.services.client.data.DeltaDataType
 
+var heart_bpm = 0.0
 
 
 class HeartMeasureCallback: MeasureCallback {
@@ -28,21 +29,32 @@ class HeartMeasureCallback: MeasureCallback {
 
     override fun onDataReceived(data: DataPointContainer) {
         // Inspect data points.
-        Log.d("Health", "Data is received")
-        Log.d("Health", data.toString())
-        Log.d("Health", data.getData(DataType.HEART_RATE_BPM).last().toString())
-        Log.d("Health", data.getData(DataType.HEART_RATE_BPM).last().dataType.toString())
-        Log.d("Health", data.getData(DataType.HEART_RATE_BPM).last().value.toString())
+        val TAG = "Health"
+        Log.d(TAG, "================")
+        Log.d(TAG, "Data is received")
+        Log.d(TAG, data.toString())
+        Log.d(TAG, data.getData(DataType.HEART_RATE_BPM).last().toString())
+        Log.d(TAG, data.getData(DataType.HEART_RATE_BPM).last().dataType.toString())
+        Log.d(TAG, data.getData(DataType.HEART_RATE_BPM).last().value.toString())
 //        val heartRate = data.getData(DataType.HEART_RATE_BPM).last()
 //        Log.d("HeartRate", "Heart rate: $heartRate bpm")
-        runAlarm(data.getData(DataType.HEART_RATE_BPM).last().value.toFloat())
+        //runAlarm(data.getData(DataType.HEART_RATE_BPM).last().value.toFloat())
+        val heart_bpm_val = data.getData(DataType.HEART_RATE_BPM).last().value
+        heart_bpm = heart_bpm_val
+        cancelAllNotifications(context)
+        if (0 < heart_bpm_val && heart_bpm_val <  100){
+            runAlarm(data.getData(DataType.HEART_RATE_BPM).last().value.toFloat())
+        }
+        else{
+            Log.d(TAG, "Too high bpm")
+        }
     }
 
     fun runAlarm(heart_bpm: Float){
         Log.d("Health", "Run Alarm {$heart_bpm}")
 
 
-        val ve = VibrationEffect.createOneShot(2000, 255)
+        val ve = VibrationEffect.createOneShot(1000, 255)
         val vibrator2: Vibrator
 //        val context = this.getApplicationContext()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

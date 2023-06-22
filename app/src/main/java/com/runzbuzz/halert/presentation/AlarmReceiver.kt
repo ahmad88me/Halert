@@ -51,23 +51,25 @@ class AlarmReceiver : BroadcastReceiver() {
         Log.d(TAG, "Alarm Receiver")
 
 
-        val ve = VibrationEffect.createOneShot(2000, 255)
-        val vibrator2: Vibrator
+        val ve = VibrationEffect.createOneShot(1000, 255)
+        val vibrator: Vibrator
 //        val context = this.getApplicationContext()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             Log.d(TAG, "New version")
 
             val vmanager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
 //        val vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-            vibrator2 = vmanager.defaultVibrator
+            vibrator = vmanager.defaultVibrator
         } else{
             Log.d(TAG, "Old version")
-            vibrator2 = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+            vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
         }
-        Log.d(TAG, "hasVibrator: " + vibrator2.hasVibrator().toString())
+        Log.d(TAG, "hasVibrator: " + vibrator.hasVibrator().toString())
 //        Log.d("HWorker", "Stopped the Vibration for now.")
-//        vibrator2.vibrate(ve)
+//        vibrator.vibrate(ve)
 
+
+        createNotification5(context)
 
 
 //        val wakeLock: PowerManager.WakeLock =
@@ -80,22 +82,22 @@ class AlarmReceiver : BroadcastReceiver() {
 //
 //
 //
-        val wl = (context.getSystemService(Context.POWER_SERVICE) as PowerManager)
-        .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Halert:AlarmReceiver")
-        wl.acquire()
-
-
-        //Log.d(TAG, "going to sleep for 5 seconds")
-        // to sleep
-        //TimeUnit.SECONDS.sleep(5L)
-        //Log.d(TAG, "walking up")
-
-//        Toast.makeText(context, "Screen on ... ", Toast.LENGTH_SHORT).show()
-
-        //createNotificationChannel(context, intent)
-
-
-        wl.release()
+//        val wl = (context.getSystemService(Context.POWER_SERVICE) as PowerManager)
+//        .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Halert:AlarmReceiver")
+//        wl.acquire()
+//
+//
+//        //Log.d(TAG, "going to sleep for 5 seconds")
+//        // to sleep
+//        //TimeUnit.SECONDS.sleep(5L)
+//        //Log.d(TAG, "walking up")
+//
+////        Toast.makeText(context, "Screen on ... ", Toast.LENGTH_SHORT).show()
+//
+//        //createNotificationChannel(context, intent)
+//
+//
+//        wl.release()
 
 
 //        PowerManager pm = (PowerManager) getApplicationContext().getSystemService(Context.POWER_SERVICE);

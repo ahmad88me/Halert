@@ -1,265 +1,252 @@
-///* While this template provides a good starting point for using Wear Compose, you can always
-// * take a look at https://github.com/android/wear-os-samples/tree/main/ComposeStarter and
-// * https://github.com/android/wear-os-samples/tree/main/ComposeAdvanced to find the most up to date
-// * changes to the libraries and their usages.
-// */
-//
-//package com.runzbuzz.halert.presentation
-//
-//import android.content.Context
-//import android.os.Build
-//import android.os.Bundle
-//import android.os.VibrationEffect
-//import android.os.Vibrator
-//import android.os.VibratorManager
-//import android.util.Log
-//import android.view.WindowManager
-//import androidx.activity.ComponentActivity
-//import androidx.activity.compose.setContent
-//import androidx.compose.foundation.background
-//import androidx.compose.foundation.layout.Arrangement
-//import androidx.compose.foundation.layout.Column
-//import androidx.compose.foundation.layout.fillMaxSize
-//import androidx.compose.foundation.layout.fillMaxWidth
-//import androidx.compose.foundation.layout.height
-//import androidx.compose.foundation.layout.heightIn
-//import androidx.compose.foundation.layout.padding
-//import androidx.compose.foundation.layout.width
-//import androidx.compose.runtime.Composable
-//import androidx.compose.runtime.getValue
-//import androidx.compose.runtime.mutableStateOf
-//import androidx.compose.runtime.remember
-//import androidx.compose.runtime.setValue
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.platform.LocalContext
-//import androidx.compose.ui.res.stringResource
-//import androidx.compose.ui.text.style.TextAlign
-//import androidx.compose.ui.tooling.preview.Devices
-//import androidx.compose.ui.tooling.preview.Preview
-//import androidx.compose.ui.unit.dp
-//import androidx.fragment.app.FragmentActivity
-//import androidx.health.services.client.HealthServices
-//import androidx.health.services.client.MeasureCallback
-//import androidx.health.services.client.data.DataType
-//import androidx.health.services.client.MeasureClient
-//import androidx.health.services.client.data.Availability
-//import androidx.health.services.client.data.DataPointContainer
-//import androidx.health.services.client.data.DataTypeAvailability
-//import androidx.health.services.client.data.DeltaDataType
-//import androidx.health.services.client.data.PassiveListenerConfig
-//import androidx.lifecycle.lifecycleScope
-//import androidx.wear.ambient.AmbientModeSupport
-//
-//import androidx.wear.compose.material.Button
-//import androidx.wear.compose.material.MaterialTheme
-//import androidx.wear.compose.material.Text
-//import androidx.work.BackoffPolicy
-//import androidx.work.OneTimeWorkRequest
-//import androidx.work.OneTimeWorkRequestBuilder
-//import androidx.work.OutOfQuotaPolicy
-//import androidx.work.PeriodicWorkRequestBuilder
-//import androidx.work.WorkManager
-//import androidx.work.WorkRequest
-//import com.runzbuzz.halert.R
-//import com.runzbuzz.halert.presentation.theme.HalertTheme
-//import kotlinx.coroutines.launch
-//import java.util.concurrent.TimeUnit
-//
-//class MainActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvider {
-//
-////class MainActivity : ComponentActivity() {
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        setContent {
-//            //getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-////            val healthClient = HealthServices.getClient(this /*context*/)
-////            val measureClient = healthClient.measureClient
-////            lifecycleScope.launch {
-////                val capabilities = measureClient.getCapabilitiesAsync().await()
-////                val supportsHeartRate =
-////                    DataType.HEART_RATE_BPM in capabilities.supportedDataTypesMeasure
-////            }
-//
-////            val heartRateCallback = object : MeasureCallback {
-////                override fun onAvailabilityChanged(dataType: DeltaDataType<*, *>, availability: Availability) {
-////                    if (availability is DataTypeAvailability) {
-////                        Log.d("Health", "Availability is changed")
-////                        Log.d("Health", availability.toString())
-////
-////                        // Handle availability change.
-////                    }
-////                }
-////
-////                override fun onDataReceived(data: DataPointContainer) {
-////                    // Inspect data points.
-////                    Log.d("Health", "Data is received")
-////                    Log.d("Health", data.toString())
-////                    Log.d("Health", data.getData(DataType.HEART_RATE_BPM).last().toString())
-////                    Log.d("Health", data.getData(DataType.HEART_RATE_BPM).last().dataType.toString())
-////                    Log.d("Health", data.getData(DataType.HEART_RATE_BPM).last().value.toString())
-////                }
-////
-////                override fun onRegistered() {
-////                    super.onRegistered()
-////                    Log.d("Health", "Registered")
-////                }
-////
-////                override fun onRegistrationFailed(throwable: Throwable) {
-////                    super.onRegistrationFailed(throwable)
-////                    Log.d("Health", "Registration failed")
-////                }
-////            }
-//
-//
-//            var vibrator = this.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-//            val ve = VibrationEffect.createOneShot(2000, 255)
-////    val vibrator: Vibrator
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//                Log.d("Main", "New version")
-//
-//                val vmanager = this.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-////        val vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-//                vibrator = vmanager.defaultVibrator
-//            }
-//            else{
-//                Log.d("Main", "Old version")
-//                //vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-//            }
-//            Log.d("Main", "hasVibrator: " + vibrator.hasVibrator().toString())
-//            vibrator.vibrate(ve)
-//
-//
-//
-////            val heartWorkRequest: WorkRequest =
-////                OneTimeWorkRequestBuilder<HWorker>()
-////                    .setBackoffCriteria(
-////                        BackoffPolicy.LINEAR,
-////                        20,
-////                        TimeUnit.SECONDS)
-////                    .build()
-//
-//            val heartWorkRequest =
-//                PeriodicWorkRequestBuilder<HWorker>(20, TimeUnit.SECONDS)
-//                    // Additional configuration
-//                        // Always run
-////                    .setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
-//                    .build()
-//
-//
-//            WorkManager
-//                .getInstance(this)
-//                .enqueue(heartWorkRequest)
-//
-//
-//
-//
-//            val heartRateCallback = HeartMeasureCallback()
-//            val healthClient = HealthServices.getClient(this /*context*/)
-//            val measureClient = healthClient.measureClient
-//            //measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, heartRateCallback)
-//
-//
-//
-//
-//
-//
-//
-//
-//
-////            AmbientModeSupport.attach(this)
-//
-//
-//
-////            val passiveListenerConfig = PassiveListenerConfig.builder()
-////                .setDataTypes(setOf(DataType.HEART_RATE_BPM))
-////                .build()
-////            val healthClient = HealthServices.getClient(this /*context*/)
-////            val passiveMonitoringClient = healthClient.passiveMonitoringClient
-////            passiveMonitoringClient.setPassiveListenerServiceAsync()
-//
-//            WearApp("Android")
-//        }
-//    }
-//
-////    override fun getAmbientCallback(): AmbientModeSupport.AmbientCallback {
-////        TODO("Not yet implemented")
-////    }
-//    override fun getAmbientCallback(): AmbientModeSupport.AmbientCallback = MyAmbientCallback()
-//
-//}
-//
-//@Composable
-//fun WearApp(greetingName: String) {
-//    HalertTheme {
-//        /* If you have enough items in your list, use [ScalingLazyColumn] which is an optimized
-//         * version of LazyColumn for wear devices with some added features. For more information,
-//         * see d.android.com/wear/compose.
-//         */
-//        Column(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .background(MaterialTheme.colors.background),
-//            verticalArrangement = Arrangement.Center
-//        ) {
-//            //Greeting(greetingName = greetingName)
-//            HeartCol(modifier = Modifier
-//                .fillMaxSize()
-//                .background(MaterialTheme.colors.background)
-//                )
-//        }
-//    }
-//}
-//
-//@Composable
-//fun HeartCol(modifier: Modifier){
-//    val context = LocalContext.current
-//    Column(modifier = modifier.padding(16.dp), verticalArrangement = Arrangement.Center){
-//        var heart_rate by remember { mutableStateOf(0) }
-//        Text("The Heart Rate is ${heart_rate} ")
-//        Button(onClick = { heart_rate++}, modifier=Modifier.padding(top = 8.dp).height(height=40.dp).width(width=150.dp)){
-//            Text("Read Heart Rate")
-//        }
-//        Button(onClick = {
-//            var vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-//            val ve = VibrationEffect.createOneShot(2000, 255)
-////    val vibrator: Vibrator
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-//                Log.d("Button", "New version")
-//
-//                val vmanager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-////        val vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-//                vibrator = vmanager.defaultVibrator
-//            }
-//            else{
-//                Log.d("Button", "Old version")
-//                //vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-//            }
-//            Log.d("Button", "hasVibrator: " + vibrator.hasVibrator().toString())
-//            vibrator.vibrate(ve)
-//
-//                         }, modifier=Modifier.padding(top = 8.dp).height(height=40.dp).width(width=150.dp)){
-//            Text("Vibrate")
-//        }
-//    }
-//
-//}
-//
-//
-//
-//
-//
-//@Composable
-//fun Greeting(greetingName: String) {
-//    Text(
-//        modifier = Modifier.fillMaxWidth(),
-//        textAlign = TextAlign.Center,
-//        color = MaterialTheme.colors.primary,
-//        text = stringResource(R.string.hello_world, greetingName)
-//    )
-//}
-//
-//@Preview(device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
-//@Composable
-//fun DefaultPreview() {
-//    WearApp("Preview Android")
-//}
+package com.runzbuzz.halert.presentation
+
+
+// Import the necessary libraries
+
+import android.Manifest
+import android.Manifest.permission.BODY_SENSORS
+import android.app.AlarmManager
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.NotificationManager.IMPORTANCE_HIGH
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
+import android.os.Bundle
+import android.os.SystemClock
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import android.util.Log
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
+import androidx.health.services.client.HealthServices
+import androidx.health.services.client.data.DataType
+import androidx.wear.ambient.AmbientModeSupport
+import androidx.wear.compose.material.Button
+import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material.Text
+import com.runzbuzz.halert.R
+
+
+class MainActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvider {
+    /*
+ * Declare an ambient mode controller, which will be used by
+ * the activity to determine if the current mode is ambient.
+ */
+    lateinit var ambientController: AmbientModeSupport.AmbientController
+    var latest_heart_bps = 0
+    var latest_read = ""
+    // In your main activity, declare the following variables
+    //private lateinit var alarmMgr: AlarmManager
+    private var alarmMgr: AlarmManager? = null
+    private lateinit var alarmIntent: PendingIntent
+
+    fun getLatestHeartBPS(): Int {
+        return latest_heart_bps
+    }
+
+    fun getLatestRead(): String{
+        return latest_read
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        val TAG = "Main"
+
+        super.onCreate(savedInstanceState)
+        ambientController = AmbientModeSupport.attach(this)
+        this.setTurnScreenOn(true)
+        setContent {
+            WearApp()
+        }
+
+        requestPermissions()
+
+        // In your onCreate method, initialize the alarm manager and the pending intent
+        alarmMgr = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        alarmIntent = Intent(this, AlarmReceiver::class.java).let { intent ->
+            PendingIntent.getBroadcast(this, 0, intent, 0)
+        }
+
+        alarmMgr?.setRepeating(
+            AlarmManager.ELAPSED_REALTIME_WAKEUP,
+            SystemClock.elapsedRealtime(),
+            60 * 1000,
+            alarmIntent
+        )
+
+//        // active
+        val heartRateCallback = HeartMeasureCallback()
+        val healthClient = HealthServices.getClient(this /*context*/)
+        val measureClient = healthClient.measureClient
+        heartRateCallback.context = this
+        measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, heartRateCallback)
+        createNotificationChannel(this)
+    }
+    
+    private fun requestPermissions(){
+        val TAG="Main-request-permissions"
+        Log.d(TAG, "requesting permissions...")
+        ActivityCompat.requestPermissions(this,
+            listOf(Manifest.permission.BODY_SENSORS, Manifest.permission.POST_NOTIFICATIONS).toTypedArray(), 1)
+    }
+
+    override fun getAmbientCallback(): AmbientModeSupport.AmbientCallback {
+// Return an ambient callback that handles the ambient and active modes
+        return object : AmbientModeSupport.AmbientCallback() {
+            override fun onEnterAmbient(ambientDetails: Bundle?) {
+                Log.d("Ambient", "Entering Ambient Mode")
+
+                super.onEnterAmbient(ambientDetails)
+// Stop the vibration runnable when entering ambient mode
+//                handler.removeCallbacks(vibrationRunnable)
+            }
+
+            override fun onUpdateAmbient() {
+                Log.d("Ambient", "Updating Ambient Mode")
+                super.onUpdateAmbient()
+            }
+
+            override fun onExitAmbient() {
+                Log.d("Ambient", "Leaving Ambient Mode")
+                super.onExitAmbient()
+                Log.d("Ambient", "Leaving Ambient Mode")
+            }
+        }
+    }
+}
+
+@Composable
+fun WearApp() {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colors.background),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Text("Read Heart Rate: $heart_bpm ")
+        Button(
+            onClick = {
+                Log.d("Activity", "Button is clicked")
+                Log.d("Click", "Attempt 2")
+                val ve = VibrationEffect.createOneShot(2000, 255)
+                val vibrator2: Vibrator
+//        val context = this.getApplicationContext()
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    Log.d("Click", "New version")
+                    val vmanager =
+                        context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+//        val vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                    vibrator2 = vmanager.defaultVibrator
+                } else {
+                    Log.d("Click", "Old version")
+                    vibrator2 = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+                }
+                Log.d("Click", "hasVibrator: " + vibrator2.hasVibrator().toString())
+                vibrator2.vibrate(ve)
+
+//                createNotificationSample(context)
+
+                createNotification5(context)
+
+
+            }, modifier = Modifier
+                .padding(top = 8.dp)
+                .height(height = 40.dp)
+                .width(width = 150.dp)
+        ) {
+            Text("Read Heart Rate")
+        }
+    }
+
+}
+
+
+@Preview(device = Devices.WEAR_OS_SMALL_ROUND, showSystemUi = true)
+@Composable
+fun DefaultPreview() {
+    WearApp()
+}
+
+
+fun createNotification5(context: Context){
+    val TAG="Notification5"
+    val CHANNEL_ID="Halert"
+    val notificationId=1
+
+    var builder = NotificationCompat.Builder(context, CHANNEL_ID)
+        .setContentTitle("A title")
+        .setContentText("Notification Description")
+        .setAutoCancel(true)
+        .setSmallIcon(androidx.media.R.drawable.notification_bg)
+//        .setOngoing(true)
+//        .extend(NotificationCompat.WearableExtender().setContentIcon(androidx.media.R.drawable.notification_bg))
+    Log.d(TAG, "Created the builder")
+    var notification = builder.build()
+    NotificationManagerCompat.from(context).notify(0, notification);
+    Log.d(TAG, "The notification should show")
+
+//    cancelAllNotifications(context)
+
+}
+
+private fun createNotificationChannel(context: Context) {
+    // Create the NotificationChannel, but only on API 26+ because
+    // the NotificationChannel class is new and not in the support library
+    val TAG = "Notification Channel"
+    val CHANNEL_ID="Halert"
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val name = CHANNEL_ID//"name"
+        val descriptionText = "the halert channel"
+//        val importance = NotificationManager.IMPORTANCE_DEFAULT
+//        val importance = NotificationManager.IMPORTANCE_LOW
+        val importance = NotificationManager.IMPORTANCE_HIGH
+        val channel = NotificationChannel(CHANNEL_ID, name, importance).apply {
+            description = descriptionText
+        }
+        // Register the channel with the system
+        val notificationManager: NotificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if(notificationManager.areNotificationsEnabled()){
+            Log.d(TAG, "Notifications are enabled")
+        }
+        else{
+            Log.d(TAG, "Notifications are not")
+        }
+        notificationManager.createNotificationChannel(channel)
+    }
+    Log.d("Notification", "Notification Channel is created")
+}
+
+fun cancelAllNotifications(context: Context){
+    val TAG="Main-cancel-notifications"
+    Log.d(TAG, "will attempt to cancel all notifications")
+    val notificationManager: NotificationManager =
+        context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    notificationManager.cancelAll()
+    Log.d(TAG, "No notification should be showing now")
+}
