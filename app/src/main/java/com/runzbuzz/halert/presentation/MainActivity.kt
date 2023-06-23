@@ -22,6 +22,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.util.Log
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +31,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -48,6 +53,20 @@ import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import com.runzbuzz.halert.R
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.asStateFlow
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.launch
 
 
 class MainActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvider {
@@ -63,6 +82,11 @@ class MainActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvi
     private var alarmMgr: AlarmManager? = null
     private lateinit var alarmIntent: PendingIntent
 
+
+
+
+
+
     fun getLatestHeartBPS(): Int {
         return latest_heart_bps
     }
@@ -73,8 +97,18 @@ class MainActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvi
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val TAG = "Main"
-
         super.onCreate(savedInstanceState)
+
+        val viewModel: DiceRollViewModel by viewModels()
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect {
+                    // Update UI elements
+                }
+            }
+        }
+
         ambientController = AmbientModeSupport.attach(this)
         this.setTurnScreenOn(true)
         setContent {
@@ -101,6 +135,7 @@ class MainActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvi
         val healthClient = HealthServices.getClient(this /*context*/)
         val measureClient = healthClient.measureClient
         heartRateCallback.context = this
+        heartRateCallback.viewModel = viewModel
         measureClient.registerMeasureCallback(DataType.HEART_RATE_BPM, heartRateCallback)
         createNotificationChannel(this)
     }
@@ -137,9 +172,15 @@ class MainActivity : FragmentActivity(), AmbientModeSupport.AmbientCallbackProvi
     }
 }
 
+
+
+
+
 @Composable
 fun WearApp() {
     val context = LocalContext.current
+    val viewModel: DiceRollViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -148,39 +189,40 @@ fun WearApp() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Text("Read Heart Rate: $heart_bpm ")
-        Button(
-            onClick = {
-                Log.d("Activity", "Button is clicked")
-                Log.d("Click", "Attempt 2")
-                val ve = VibrationEffect.createOneShot(2000, 255)
-                val vibrator2: Vibrator
-//        val context = this.getApplicationContext()
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    Log.d("Click", "New version")
-                    val vmanager =
-                        context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-//        val vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                    vibrator2 = vmanager.defaultVibrator
-                } else {
-                    Log.d("Click", "Old version")
-                    vibrator2 = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-                }
-                Log.d("Click", "hasVibrator: " + vibrator2.hasVibrator().toString())
-                vibrator2.vibrate(ve)
 
-//                createNotificationSample(context)
-
-                createNotification5(context)
-
-
-            }, modifier = Modifier
-                .padding(top = 8.dp)
-                .height(height = 40.dp)
-                .width(width = 150.dp)
-        ) {
-            Text("Read Heart Rate")
-        }
+        Text("Read Heart Rate $uiState")
+//        Button(
+//            onClick = {
+//                Log.d("Activity", "Button is clicked")
+//                Log.d("Click", "Attempt 2")
+//                val ve = VibrationEffect.createOneShot(2000, 255)
+//                val vibrator2: Vibrator
+////        val context = this.getApplicationContext()
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//                    Log.d("Click", "New version")
+//                    val vmanager =
+//                        context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+////        val vibrator = applicationContext.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+//                    vibrator2 = vmanager.defaultVibrator
+//                } else {
+//                    Log.d("Click", "Old version")
+//                    vibrator2 = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+//                }
+//                Log.d("Click", "hasVibrator: " + vibrator2.hasVibrator().toString())
+//                vibrator2.vibrate(ve)
+//
+////                createNotificationSample(context)
+//
+//                createNotification5(context)
+//
+//
+//            }, modifier = Modifier
+//                .padding(top = 8.dp)
+//                .height(height = 40.dp)
+//                .width(width = 150.dp)
+//        ) {
+//            Text("Read Heart Rate")
+//        }
     }
 
 }
@@ -249,4 +291,16 @@ fun cancelAllNotifications(context: Context){
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
     notificationManager.cancelAll()
     Log.d(TAG, "No notification should be showing now")
+}
+
+
+class DiceRollViewModel : ViewModel() {
+    // Expose screen UI state
+    private val _uiState = MutableStateFlow(0)
+    val uiState: StateFlow<Int> = _uiState.asStateFlow()
+
+    // Handle business logic
+    fun rollDice(newval: Int) {
+        _uiState.value = newval
+    }
 }

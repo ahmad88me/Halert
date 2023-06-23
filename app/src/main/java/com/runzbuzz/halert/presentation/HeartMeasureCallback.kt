@@ -13,11 +13,13 @@ import androidx.health.services.client.data.DataType
 import androidx.health.services.client.data.DataTypeAvailability
 import androidx.health.services.client.data.DeltaDataType
 
-var heart_bpm = 0.0
+//var heart_bpm = 0.0
 
 
 class HeartMeasureCallback: MeasureCallback {
     lateinit var context: Context
+    lateinit var viewModel: DiceRollViewModel
+
     override fun onAvailabilityChanged(dataType: DeltaDataType<*, *>, availability: Availability) {
         if (availability is DataTypeAvailability) {
             Log.d("Health", "Availability is changed")
@@ -40,9 +42,10 @@ class HeartMeasureCallback: MeasureCallback {
 //        Log.d("HeartRate", "Heart rate: $heartRate bpm")
         //runAlarm(data.getData(DataType.HEART_RATE_BPM).last().value.toFloat())
         val heart_bpm_val = data.getData(DataType.HEART_RATE_BPM).last().value
-        heart_bpm = heart_bpm_val
+        viewModel.rollDice(heart_bpm_val.toInt())
+//        heart_bpm = heart_bpm_val
         cancelAllNotifications(context)
-        if (0 < heart_bpm_val && heart_bpm_val <  100){
+        if (0 < heart_bpm_val && heart_bpm_val <  50){
             runAlarm(data.getData(DataType.HEART_RATE_BPM).last().value.toFloat())
         }
         else{
@@ -77,6 +80,7 @@ class HeartMeasureCallback: MeasureCallback {
     override fun onRegistered() {
         super.onRegistered()
         Log.d("Health", "Registered")
+
     }
 
     override fun onRegistrationFailed(throwable: Throwable) {
